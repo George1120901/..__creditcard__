@@ -4,7 +4,11 @@ import csv
 import sqlite3
 import pandas as pd
 
+__all__=['csv_to_database']
 
+'''
+執行前,需先建立datasource資料夾,底下建立age/incom/education/job/sex資料夾
+'''
 # ---------下載資料---------#
 def __download_credit_data() -> csv:
     area = [
@@ -64,7 +68,7 @@ def __download_credit_data() -> csv:
     sex = ["M", "F"]
     sex_code = {"1": "男性", "2": "女性"}
 
-    # 兩性消費
+    #---兩性消費---#
     for A in industry:
         for B in area:
             sex_url = (
@@ -75,10 +79,9 @@ def __download_credit_data() -> csv:
                 continue
             with open(f"./datasource/sex/sex{B}_{A}.csv", "wb") as file:
                 file.write(response_sex.content)
-                file.close()
     print("性別消費資料讀取成功")
 
-    # 各職業類別消費樣態資料
+    #---各職業類別消費---#
     for E in industry:
         for F in area:
             job_url = (
@@ -89,10 +92,9 @@ def __download_credit_data() -> csv:
                 continue
             with open(f"./datasource/job/job{F}_{E}.csv", "wb") as file:
                 file.write(response_job.content)
-                file.close()
     print("職業類別消費資料讀取成功")
 
-    # 各年收入族群消費樣態資料(V)
+    #---各年收入族群消費---#
     for G in industry:
         for H in area:
             incom_url = f"https://bas.nccc.com.tw/nccc-nop/OpenAPI/C03/incomegroupsconsumption/{H}/{G}"
@@ -101,10 +103,9 @@ def __download_credit_data() -> csv:
                 continue
             with open(f"./datasource/incom/incom{H}_{G}.csv", "wb") as file:
                 file.write(response_incom.content)
-                file.close()
     print("收入類別消費資料讀取成功")
 
-    # 各教育程度消費樣態資料(V)
+    #---各教育程度消費---#
     for I in industry:
         for J in area:
             education_url = f"https://bas.nccc.com.tw/nccc-nop/OpenAPI/C05/educationconsumption/{J}/{I}"
@@ -113,10 +114,9 @@ def __download_credit_data() -> csv:
                 continue
             with open(f"./datasource/education/education{J}_{I}.csv", "wb") as file:
                 file.write(response_education.content)
-                file.close()
     print("教育程度資料讀取成功")
 
-    # 兩性X各年齡層消費
+    #---兩性X各年齡層消費---#
     for A in industry:
         for B in area:
             for C in sex:
@@ -129,7 +129,6 @@ def __download_credit_data() -> csv:
                 file_path = os.path.join(folder_path, file_name)
                 with open(file_path, "wb") as file:
                     file.write(response_age.content)
-                    file.close()
     print("年齡層消費資料讀取成功")
 
     # ---------合併csv---------#

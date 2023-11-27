@@ -1,5 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
+import ttkbootstrap as ttkb
+from ttkbootstrap import Style
 import pandas as pd
 import sqlite3
 from tkinter.simpledialog import Dialog
@@ -14,6 +16,7 @@ class Window(tk.Tk):
         self.title("信用卡消費樣態")
         self.conn = sqlite3.connect("creditcard.db")
         plt.rcParams["font.family"] = "Microsoft JhengHei"
+        style = Style("lumen")
 
         # ------------介面-----------#
         mainFrame = tk.Frame(self, relief=tk.GROOVE, borderwidth=1)
