@@ -145,10 +145,11 @@ class Window(tk.Tk):
         )
         self.industry.grid(row=4, column=1, padx=10, pady=10)
 
+        #state="active"->按鈕可以點擊,command按鈕被點擊時執行self.load_treeview
         self.botton = tk.Button(
             topFrame, text="搜尋", state="active", command=self.load_treeview, width=30
         ).grid(row=5, column=0, padx=10, pady=20, columnspan=2)
-        topFrame.pack(side=tk.LEFT, padx=(5, 5), fill="y")
+        topFrame.pack(side=tk.LEFT, padx=(5, 5), pady=(0, 5),fill="y")
 
         # -------------資料呈現------------#
         middleFrame = ttk.Labelframe(self, text="資料")
@@ -180,6 +181,7 @@ class Window(tk.Tk):
         )
 
         # ------Bind------#
+        #將事件綁定方法,"<ButtonRelease-1>"->左鍵點擊/"<ButtonRelease-3>"右鍵點擊,執行self.selectedItem
         self.treeview.bind("<ButtonRelease-1>", self.selectedItem)
 
     # ------------treeview------------#
@@ -223,6 +225,7 @@ class Window(tk.Tk):
         table = self.data_mapping.get(selected_option)
         conn = sqlite3.connect("creditcard.db")
 
+        #
         fig, ax = plt.subplots(figsize=(5, 3))
         fig.subplots_adjust(bottom=0.1, top=0.9)
 
@@ -524,21 +527,25 @@ class Window(tk.Tk):
         data_dict = self.treeview.item(selected_item)
         data_list = data_dict["values"]
         if data_list:
-            index = self.treeview.index(selected_item)
+            #index = self.treeview.index(selected_item)
             ShowDetail(self, self.treeview["columns"], data_list, title="資訊")
 
     def display_data(self, data):
-        self.treeview.delete(*self.treeview.get_children())
+        self.treeview.delete(*self.treeview.get_children())  #顯示新資料前清空treeview現有資料
 
-        if not data.empty:
-            columns = list(data.columns)
-            self.treeview["columns"] = columns
+        if not data.empty:  #檢查dataframe(data)資料是否為空
+            columns = list(data.columns)  #取得data欄位名稱,放入columns list
+            self.treeview["columns"] = columns  #設定treeview欄位名稱
+            #columns的資料一個一個取出
             for col in columns:
+                #設定treeview標題, 將取出的欄位名稱設定為heading, text=col->顯示在treeview上的文字內容, anchor->對齊方式
                 self.treeview.heading(col, text=col, anchor="w")
+                #設定每一欄位的屬性
                 self.treeview.column(col, anchor="w", width=100)
-
-            for index, row in data.iterrows():
-                values = [row[col] for col in columns]
+            #將dataframe(data)內容轉換為list
+            data_list = data.values.tolist()
+            #將list的內容寫入treeview
+            for values in data_list:
                 self.treeview.insert("", "end", values=values)
 
 
@@ -550,17 +557,15 @@ class ShowDetail(Dialog):
         super().__init__(parent, **kwargs)
 
     def body(self, master):
-        self.geometry("200x260")
-        self.GetDataInfo_var = tk.StringVar()
-        mainFrame = tk.Label(
-            master, textvariable=self.GetDataInfo_var, padx=10, pady=10
-        )
+        self.geometry("200x260")  #設定dialog視窗大小
 
         try:
+            #self.columns->欄位名稱, self.data->與欄位名稱對應的數值
+            #zip->用於將self.columns和self.data中的元素一一配對
             for col, value in zip(self.columns, self.data):
                 dataInfo = tk.Label(master, text=f"{col}:  {value}", font=("Microsoft JhengHei", 10, "bold"))
                 dataInfo.pack(pady=(6,1), anchor="nw")
-        except Exception as e:
+        except Exception as e:  #若有異常執行以下程式
             print(f"Exception in ShowDetail: {e}")
             print("Columns:", self.columns)
             print("Data:", self.data)
@@ -575,21 +580,23 @@ class ShowDetail(Dialog):
 
 
 def main():
-    data.csv_to_database()
+    #data.csv_to_database()
     def on_closing():
         print("window關閉")
+        #將canvas關閉
         if hasattr(window, "canvas_line_chart"):
             window.canvas_line_chart.get_tk_widget().destroy()
         if hasattr(window, "canvas_pie_chart"):
             window.canvas_pie_chart.get_tk_widget().destroy()
         if hasattr(window, "canvas_bar_chart"):
             window.canvas_bar_chart.get_tk_widget().destroy()
+        #將所有matplotlib圖表關閉
         plt.close("all")
         window.destroy()
 
     window = Window()
-    window.protocol("WM_DELETE_WINDOW", on_closing)
-    window.resizable(width=False, height=False)
+    window.protocol("WM_DELETE_WINDOW", on_closing)  #關閉視窗時會執行on_closing
+    window.resizable(width=False, height=False)  #固定視窗大小,不能更改
     window.mainloop()
 
 
