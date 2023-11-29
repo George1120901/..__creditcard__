@@ -8,6 +8,7 @@ from tkinter.simpledialog import Dialog
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import data
+import os
 
 
 class Window(tk.Tk):
@@ -16,7 +17,7 @@ class Window(tk.Tk):
         self.title("信用卡消費樣態")
         self.conn = sqlite3.connect("creditcard.db")
         plt.rcParams["font.family"] = "Microsoft JhengHei"
-        style = Style("lumen")
+        style = Style("lumen")  #設定ttkbootstrap主題
 
         # ------------介面-----------#
         mainFrame = tk.Frame(self, relief=tk.GROOVE, borderwidth=1)
@@ -46,6 +47,7 @@ class Window(tk.Tk):
         # ------StringVar------#
         self.data_var = tk.StringVar()
         self.data_var.set("請選擇資料類型")
+        #將各選項對應到各自在sqlite的table名稱
         self.data_mapping = {
             "職業類別": "job",
             "年收入": "incom",
@@ -523,7 +525,7 @@ class Window(tk.Tk):
         self.canvas_bar_chart.draw()
 
     def selectedItem(self, event):
-        selected_item = self.treeview.focus()  #取得被選中的資料->
+        selected_item = self.treeview.focus()  #取得被選中的資料
         data_dict = self.treeview.item(selected_item)  #取得選取資料的內容,並儲存在data_dict中
         data_list = data_dict["values"]  #取出data_dict["values"]中的資料
         if data_list:  #當data_list有值,就執行以下程式碼
@@ -581,7 +583,10 @@ class ShowDetail(Dialog):
 
 
 def main():
-    data.csv_to_database()
+    def check_database():
+        path = "creditcard.db"  #設定資料庫路徑
+        if not os.path.exists(path):  #如果沒有建立資料庫,就執行以下程式
+            data.csv_to_database()
     def on_closing():
         print("window關閉")
         #將canvas關閉
@@ -595,6 +600,7 @@ def main():
         plt.close("all")
         window.destroy()
 
+    check_database()
     window = Window()
     window.protocol("WM_DELETE_WINDOW", on_closing)  #關閉視窗時會執行on_closing
     window.resizable(width=False, height=False)  #固定視窗大小,不能更改
